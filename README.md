@@ -7,7 +7,7 @@
 # <a name="_wj17irm9zqak"></a>**Integrantes**
 - Melanie Soares
 - Daniel Mendes dos Santos
-- Bruno emidio
+- Bruno Emidio
 - Gabriel Martins
 # <a name="_14mpx6a8znb7"></a>**VISÃO GERAL**
 URBCrowd é um aplicativo designado para utilizar o crowdsourcing  para o registro e gestão de problemas urbanos. Integrando a tecnologia de geolocalização, o URBcrowd permite que os cidadãos reportem questões municipais como buracos nas ruas, lâmpadas quebradas ou acúmulo de lixo diretamente às autoridades locais. O aplicativo além de permitir  o upload de fotos dos problemas, também facilita o processo de forma transparente para que todos possam acompanhar a resolução da solicitação.
