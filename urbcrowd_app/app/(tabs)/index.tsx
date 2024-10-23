@@ -104,6 +104,11 @@ export default function HomeScreen() {
         <Text style={styles.buttonText}>Abrir Filtro</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.addButton}>
+          <Text>Add</Text>
+        </TouchableOpacity>
+
       {/* Modal para o filtro */}
       <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
@@ -233,4 +238,15 @@ const styles = StyleSheet.create({
   modalButtons: {
     marginTop: 20,
   },
+  addButton: {
+    borderWidth: 1,
+    alignItems: "center",
+    width: 70,
+    position: "absolute",
+    bottom: 30,
+    height: 70,
+    elevation: 5,
+    justifyContent: "center",
+  }
+
 });
