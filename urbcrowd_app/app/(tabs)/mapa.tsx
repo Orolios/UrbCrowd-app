@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 
@@ -83,6 +83,11 @@ const MapComponent: React.FC = () => {
             title="Localização Selecionada"
           />
         )}
+        <View>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.plusSign}>+</Text>
+          </TouchableOpacity>
+        </View>
       </MapView>
     </View>
   );
@@ -95,13 +100,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   map: {
-    width: "100%",
-    height: "100%",
+    ...StyleSheet.absoluteFillObject, // Faz o mapa ocupar todo o espaço do container
   },
   loading: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  buttonContainer: {
+    position: "absolute", // Permite a sobreposição
+    bottom: 20, // Distância do fundo
+    left: 20, // Distância da esquerda
+    right: 20, // Distância da direita
+  },
+  button: {
+    width: 100,
+    height: 100,
+    borderRadius: 50, // Raio de 50 para um círculo perfeito
+    backgroundColor: "#FFA07A", // Cor laranja
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  plusSign: {
+    fontSize: 40,
+    color: "#FFFFFF", // Cor branca para o sinal de mais
   },
 });
 

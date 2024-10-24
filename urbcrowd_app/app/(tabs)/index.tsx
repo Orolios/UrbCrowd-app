@@ -28,7 +28,7 @@ const data: Item[] = [
     endereco: "Rua A, 123",
     tipo: "asfalto",
     status: "Ativo",
-    nota: 4.8,
+    nota: 32,
   },
   {
     id: "2",
@@ -36,7 +36,7 @@ const data: Item[] = [
     endereco: "Rua B, 456",
     tipo: "Iluminação",
     status: "Inativo",
-    nota: 3.5,
+    nota: 12,
   },
   {
     id: "3",
@@ -44,17 +44,75 @@ const data: Item[] = [
     endereco: "Avenida C, 789",
     tipo: "Natural",
     status: "Ativo",
-    nota: 4.9,
+    nota: 44,
+  },
+  {
+    id: "3",
+    nome: "Arvore tombadadasdasdasdadasdasdasdasda",
+    endereco: "Avenida C, 789",
+    tipo: "Natural",
+    status: "Ativo",
+    nota: 22,
+  },
+  {
+    id: "3",
+    nome: "Arvore tombada",
+    endereco: "Avenida C, 789",
+    tipo: "Natural",
+    status: "Ativo",
+    nota: 13,
+  },
+  {
+    id: "3",
+    nome: "Arvore tombada",
+    endereco: "Avenida C, 789",
+    tipo: "Natural",
+    status: "Ativo",
+    nota: 20,
+  },
+  {
+    id: "3",
+    nome: "Arvore tombada",
+    endereco: "Avenida C, 789",
+    tipo: "Natural",
+    status: "Ativo",
+    nota: 5,
+  },
+  {
+    id: "3",
+    nome: "Arvore tombada",
+    endereco: "Avenida C, 789",
+    tipo: "Natural",
+    status: "Ativo",
+    nota: 5,
+  },
+  {
+    id: "3",
+    nome: "Arvore tombada",
+    endereco: "Avenida C, 789",
+    tipo: "Natural",
+    status: "Ativo",
+    nota: 2,
   },
 ];
 
 const renderItem = ({ item }: { item: Item }) => (
-  <View style={styles.itemContainer}>
-    <Text style={styles.title}>{item.nome}</Text>
-    <Text style={styles.subtitle}>Endereço: {item.endereco}</Text>
-    <Text>Tipo: {item.tipo}</Text>
-    <Text>Status: {item.status}</Text>
-    <Text>Nota: {item.nota}</Text>
+  // <View style={styles.itemContainer}>
+  //   <Text style={styles.title}>{item.nome}</Text>
+  //   <Text style={styles.subtitle}>Endereço: {item.endereco}</Text>
+  //   <Text>Tipo: {item.tipo}</Text>
+  //   <Text>Status: {item.status}</Text>
+  //   <Text>Nota: {item.nota}</Text>
+  // </View>
+  <View style={styles.problemItem}>
+    <View style={styles.problemDetails}>
+      <Text style={styles.problemTitle}>Buraco na rua</Text>
+      <Text style={styles.problemSubtitle}>Rua Shigeo Mori, XXXX</Text>
+      <Text style={styles.problemSubtitle}>Tipo: Asfalto </Text>
+    </View>
+    <View style={styles.likesContainer}>
+      <Text style={styles.likesText}>20</Text>
+    </View>
   </View>
 );
 
@@ -152,7 +210,7 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ListItem item={item} />} // Usando o ListItem aqui
         ListHeaderComponent={
-          <Text style={styles.header}>Lista de Integrantes</Text>
+          <Text style={styles.header}>Problemas relatados:</Text>
         }
       />
     </View>
@@ -163,12 +221,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#1a3d1a",
+    marginTop: 40,
   },
   header: {
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
+    textAlign: "left",
+    color: "#FFF",
     marginVertical: 20,
   },
   itemContainer: {
@@ -182,7 +242,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   subtitle: {
@@ -232,5 +292,44 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     marginTop: 20,
+  },
+  headerText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  problemContainer: {
+    backgroundColor: "#f5f5dc",
+    padding: 16,
+    marginTop: 16,
+    borderRadius: 8,
+  },
+  problemItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    paddingVertical: 8,
+  },
+  problemDetails: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  problemTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  problemSubtitle: {
+    color: "#666",
+    fontSize: 14,
+  },
+  likesContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  likesText: {
+    marginLeft: 8,
+    color: "black",
+    fontSize: 18,
   },
 });
