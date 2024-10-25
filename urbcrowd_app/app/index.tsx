@@ -1,9 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Image, ScrollView } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { Link, useRouter } from 'expo-router';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  SignInResponse,
+  statusCodes,
+  isErrorWithCode
+  } from '@react-native-google-signin/google-signin';
 
 const LoginScreen = () => {
+
+
+  const configureGoogleSignIn = () => {
+    GoogleSignin.configure({
+      webClientId: "1087587669949-ekqk7fsq1h01g6s3flhtflj7gmfic2ie.apps.googleusercontent.com",
+    });
+  };
+
+  useEffect(() => {
+    configureGoogleSignIn();
+  });
+
+  const [error, setError] = useState();
+  const [loggedIn, setloggedIn] = useState(false);
+  const [userInfo, setuserInfo] = useState([]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -17,6 +40,29 @@ const LoginScreen = () => {
 
     router.replace('/(tabs)')
 
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response: SignInResponse = await GoogleSignin.signIn();
+      
+      console.log(JSON.stringify(response, null, 2))
+    } catch (error) {
+      console.log(error)
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            // operation (eg. sign in) already in progress
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            // Android only, play services not available or outdated
+            break;
+          default:
+          // some other error happened
+        }
+      }
+    }
   };
 
   return (
@@ -48,6 +94,8 @@ const LoginScreen = () => {
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
+
+        <GoogleSigninButton style={styles.googleLogin} onPress={() => handleGoogleSignIn()}></GoogleSigninButton>
       </ScrollView>
 
       
@@ -103,12 +151,16 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignItems: 'center',
     width: '33%',
-    alignSelf: 'center'
+    alignSelf: 'center',
+    marginBottom: 24
   },
   buttonText: {
     color: Colors.text,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  googleLogin: {
+    alignSelf: 'center',
   },
   text: {
     color: Colors.text
