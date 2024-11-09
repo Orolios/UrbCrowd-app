@@ -1,4 +1,6 @@
 import React, { useState, useEffect} from 'react';
+import * as SecureStore from 'expo-secure-store';
+import Constants from "expo-constants";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Image, ScrollView } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { Link, useRouter } from 'expo-router';
@@ -33,21 +35,36 @@ const LoginScreen = () => {
   const router = useRouter();
 
   const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert('Erro');
-      return;
-    }
 
-    router.replace('/(tabs)')
+    const userData = {
+      username: email,
+      password: password
+    };
 
+    // TODO: ADD URL API
+    const loginUri = Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':8080') ?? 'apiurl.com';
+
+    fetch('http:/' + loginUri + '/login', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+      headers: {"Content-type": "application/json; charset=UTF-8"}
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error("Não foi possível realizar seu login, verifique as credenciais e tente novamente")
+      }
+      return response.json();
+    })
+    .then(data => SecureStore.setItemAsync('secure_token', data.accessToken))
+    .then(() => router.replace('/(tabs)'))
+    .catch(err => Alert.alert("Erro", err.message));
   };
 
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const response: SignInResponse = await GoogleSignin.signIn();
-      
-      console.log(JSON.stringify(response, null, 2))
+      SecureStore.setItemAsync('secure_token', response.data?.idToken!)
+      router.replace('/(tabs)')
     } catch (error) {
       console.log(error)
       if (isErrorWithCode(error)) {
@@ -91,7 +108,9 @@ const LoginScreen = () => {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <TouchableOpacity style={!email || !password ? {...styles.button, ...styles.disabledButton} : styles.button} 
+            onPress={handleLogin}
+            disabled={!email || !password}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
@@ -153,6 +172,9 @@ const styles = StyleSheet.create({
     width: '33%',
     alignSelf: 'center',
     marginBottom: 24
+  },
+  disabledButton: {
+    opacity: 0.5
   },
   buttonText: {
     color: Colors.text,

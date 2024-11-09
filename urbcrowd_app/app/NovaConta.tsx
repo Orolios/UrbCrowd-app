@@ -8,15 +8,45 @@ import {
   Alert,
   Image,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import Constants from "expo-constants";
 
 import { Colors } from "@/constants/Colors";
 
 const SignUpScreen = () => {
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  
+  const handleCreateAccount = () => {
+
+    const userData = {
+      name: name,
+      username: username,
+      email: email,
+      password: password
+    };
+
+    // TODO: ADD URL API
+    const loginUri = Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':8080') ?? 'apiurl.com';
+
+    fetch('http:/' + loginUri + '/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+      headers: {"Content-type": "application/json; charset=UTF-8"}
+    }).then(response => {
+      if (!response.ok) {
+        if (response.status === 412) {
+          throw new Error("Usuário ou e-mail já está cadastrado.");
+        }
+      }
+      return response.json();
+    })
+    .then(() => router.back())
+    .catch(err => Alert.alert("Erro", err.message));
+  };
 
   return (
     <View style={styles.container}>
@@ -27,6 +57,9 @@ const SignUpScreen = () => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Nome</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} />
+
+        <Text style={styles.label}>Usuário</Text>
+        <TextInput style={styles.input} value={username} onChangeText={setUsername} />
 
         <Text style={styles.label}>E-mail</Text>
         <TextInput
@@ -46,10 +79,10 @@ const SignUpScreen = () => {
         />
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Link href="/(tabs)">
+      <TouchableOpacity style={!name || !username || !email || !password ? {...styles.button, ...styles.disabledButton} : styles.button}
+          onPress={handleCreateAccount}
+          disabled={!name || !username || !email || !password}>
           <Text style={styles.buttonText}>Criar Conta</Text>
-        </Link>
       </TouchableOpacity>
     </View>
   );
@@ -95,6 +128,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "33%",
     alignSelf: "center",
+  },
+  disabledButton: {
+    opacity: 0.5
   },
   buttonText: {
     color: "#fff",
