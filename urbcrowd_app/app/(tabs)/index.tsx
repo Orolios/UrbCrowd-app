@@ -23,6 +23,61 @@ interface Item {
   nota: number;
 }
 
+const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: boolean, onClose: () => void }) => {
+  return (
+    <Modal visible={visible} transparent={true} animationType="slide">
+      <View style={styles.detailmodalContainer}>
+        <View style={styles.detailmodalContent}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={styles.backButton}>←</Text>
+            </TouchableOpacity>
+            <Text style={styles.detailtitle}>{item?.nome}</Text>
+            <View style={styles.statusContainer}>
+              <Text style={styles.likes}>{item?.nota}</Text>
+              <Text style={styles.status}>{item?.status}</Text>
+            </View>
+          </View>
+
+          {/* Details Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Detalhes</Text>
+            {/* <Text style={styles.sectionText}>{item?.descricao}</Text> */}
+            <Text style={styles.detailLabel}>{item?.tipo}</Text>
+          </View>
+
+          {/* Location Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Localização</Text>
+            <Text style={styles.sectionText}>Logradouro: {item?.endereco}</Text>
+            {/* <Text style={styles.sectionText}>Bairro: {item?.bairro}</Text> */}
+            {/* <Text style={styles.sectionText}>Região: {item?.regiao}</Text> */}
+            <Text style={styles.mapLink}>Ver no mapa</Text>
+          </View>
+
+          {/* Photos Section */}
+
+        {/* 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Fotos</Text>
+          <View style={styles.photoContainer}>
+            {item?.fotos.map((foto, index) => (
+              <Image
+                key={index}
+                source={{ uri: foto }}
+                style={styles.photo}
+              />
+            ))}
+          </View>
+        </View> 
+        */}
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 // Exemplo de dados para preencher a lista
 const data: Item[] = [
   {
@@ -126,7 +181,20 @@ export default function HomeScreen() {
   const [enderecoFiltro, setEnderecoFiltro] = useState<string>("");
   const [filteredData, setFilteredData] = useState<Item[]>(data);
 
-  const router = useRouter();
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  // Function to handle item click
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setIsDetailModalVisible(true);
+  };
+
+  // Function to close the modal
+  const closeDetailModal = () => {
+    setSelectedItem(null);
+    setIsDetailModalVisible(false);
+  };
 
   // Função para aplicar os filtros
   const applyFilters = () => {
@@ -213,15 +281,23 @@ export default function HomeScreen() {
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListItem item={item} />} // Usando o ListItem aqui
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => handleItemClick(item)}>
+            <ListItem item={item} />
+          </TouchableOpacity>
+        )} // Usando o ListItem aqui
         ListHeaderComponent={
           <Text style={styles.header}>Problemas relatados:</Text>
         }
       />
 
-      <TouchableOpacity style={styles.reportButton} onPress={() => router.push("/Relatar")}>
-        <Image style={styles.buttonIcon} source={require("../../assets/images/plus-icon.png")}></Image>
-      </TouchableOpacity>
+      {/* Detail Modal */}
+      <DetailModal
+        item={selectedItem}
+        visible={isDetailModalVisible}
+        onClose={closeDetailModal}
+      />
+
     </View>
   );
 }
@@ -340,6 +416,92 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: "black",
     fontSize: 18,
+  },
+  detailmodalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)", 
+  },
+  detailmodalContent: {
+    backgroundColor: "#f0f0e0",
+    padding: 20,
+    borderRadius: 10,
+    marginHorizontal: 10, // Reduce horizontal margins to make it wider
+    width: "90%", // Set the width to 90% of the screen
+    height: "90%", // Set the height to 90% of the screen
+    overflow: "scroll", // Allow the content to scroll if it's too large
+  },
+  headerSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#5b7d5b",
+    padding: 10,
+    borderRadius: 8,
+  },
+  backButton: {
+    fontSize: 24,
+    color: "#FFF",
+  },
+  detailtitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFF",
+  },
+  statusContainer: {
+    alignItems: "center",
+  },
+  likes: {
+    fontSize: 16,
+    color: "#FFF",
+  },
+  status: {
+    color: "#FFF",
+    fontSize: 14,
+  },
+  section: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: "#4e624e",
+    borderRadius: 8,
+    flex: 1, 
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFF",
+    marginBottom: 5,
+  },
+  sectionText: {
+    fontSize: 14,
+    color: "#e0e0e0",
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: "#e0e0e0",
+    marginTop: 5,
+    fontStyle: "italic",
+  },
+  // Link to view map
+  mapLink: {
+    fontSize: 14,
+    color: "#FFF",
+    fontWeight: "bold",
+    marginTop: 5,
+  },
+  // Photo container: display images in a row
+  photoContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    flexWrap: "wrap", // Allow images to wrap to the next line
+  },
+  photo: {
+    width: 60,
+    height: 60,
+    marginRight: 5,
+    backgroundColor: "#d0d0d0",
+    borderRadius: 5,
   },
   reportButton: {
     backgroundColor: Colors.primary,
