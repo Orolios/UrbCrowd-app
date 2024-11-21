@@ -184,6 +184,7 @@ export default function HomeScreen() {
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
+  const router = useRouter();
   // Function to handle item click
   const handleItemClick = (item: Item) => {
     setSelectedItem(item);
@@ -290,6 +291,10 @@ export default function HomeScreen() {
           <Text style={styles.header}>Problemas relatados:</Text>
         }
       />
+
+      <TouchableOpacity style={styles.reportButton} onPress={() => router.push("/Relatar")}>
+        <Image style={styles.buttonIcon} source={require("../../assets/images/plus-icon.png")}></Image>
+      </TouchableOpacity>
 
       {/* Detail Modal */}
       <DetailModal
