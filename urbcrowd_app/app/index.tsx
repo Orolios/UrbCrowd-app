@@ -25,9 +25,6 @@ const LoginScreen = () => {
     configureGoogleSignIn();
   });
 
-  const [error, setError] = useState();
-  const [loggedIn, setloggedIn] = useState(false);
-  const [userInfo, setuserInfo] = useState([]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,17 +63,16 @@ const LoginScreen = () => {
       SecureStore.setItemAsync('secure_token', response.data?.idToken!)
       router.replace('/(tabs)')
     } catch (error) {
-      console.log(error)
       if (isErrorWithCode(error)) {
         switch (error.code) {
           case statusCodes.IN_PROGRESS:
-            // operation (eg. sign in) already in progress
+            Alert.alert("Erro", "Login já está em progresso.")
             break;
           case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            // Android only, play services not available or outdated
+            Alert.alert("Erro", "Serviço do Google Play não disponível. Tente novamente mais tarde.")
             break;
           default:
-          // some other error happened
+            Alert.alert("Erro", "Tente novamente mais tarde.")
         }
       }
     }
@@ -115,6 +111,11 @@ const LoginScreen = () => {
         </TouchableOpacity>
 
         <GoogleSigninButton style={styles.googleLogin} onPress={() => handleGoogleSignIn()}></GoogleSigninButton>
+
+        {/* Skip Login Button
+        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+          <Text>Pular login</Text>
+        </TouchableOpacity>*/}
       </ScrollView>
 
       
@@ -163,6 +164,11 @@ const styles = StyleSheet.create({
     marginBottom: 27,
     paddingHorizontal: 10,
     alignSelf: 'center'
+  },
+  inputError: {
+    color: Colors.error,
+    borderWidth: 1,
+    borderColor: Colors.error
   },
   button: {
     backgroundColor: Colors.primary,

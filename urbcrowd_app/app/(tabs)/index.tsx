@@ -7,8 +7,11 @@ import {
   Modal,
   TextInput,
   Button,
+  Image
 } from "react-native";
 import React, { useState } from "react";
+import { useRouter, useNavigation } from 'expo-router';
+import { Colors } from '@/constants/Colors';
 // import { Picker } from "@react-native-picker/picker";
 import ListItem from "@/components/Listagem";
 interface Item {
@@ -123,6 +126,8 @@ export default function HomeScreen() {
   const [enderecoFiltro, setEnderecoFiltro] = useState<string>("");
   const [filteredData, setFilteredData] = useState<Item[]>(data);
 
+  const router = useRouter();
+
   // Função para aplicar os filtros
   const applyFilters = () => {
     let filtered = data;
@@ -213,6 +218,10 @@ export default function HomeScreen() {
           <Text style={styles.header}>Problemas relatados:</Text>
         }
       />
+
+      <TouchableOpacity style={styles.reportButton} onPress={() => router.push("/Relatar")}>
+        <Image style={styles.buttonIcon} source={require("../../assets/images/plus-icon.png")}></Image>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -332,4 +341,19 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 18,
   },
+  reportButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 50,
+    height: 64,
+    width: 64,
+    justifyContent: "center",
+    alignSelf: "flex-end",
+    marginRight: 16,
+    marginBottom: 16
+  },
+  buttonIcon: {
+    height: 42,
+    width: 42,
+    alignSelf: "center",
+  }
 });

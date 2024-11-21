@@ -65,8 +65,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
-import index from "./index";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 
@@ -116,6 +114,8 @@ export default function RootLayout() {
 
         {/* Tela de abas (tabs), sem header */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        <Stack.Screen name="Relatar" options={{ headerShown: false }} />
 
         {/* Tela de página não encontrada */}
         <Stack.Screen name="+not-found" />
