@@ -13,6 +13,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter, useNavigation } from 'expo-router';
 import * as Location from "expo-location";
+import * as SecureStore from 'expo-secure-store';
+import Constants from "expo-constants";
 
 import ImageViewer from '@/components/ImageViewer'
 import { Colors } from '@/constants/Colors';
@@ -20,20 +22,42 @@ import { Colors } from '@/constants/Colors';
 const ReportProblemScreen = () => {
     const navigation = useNavigation();
 
+    enum ComplaintTypes {
+        TRASH, LIGHTING, SEWAGE, ASPHALT, SIDEWALK, WEEDING, OTHER
+    }
+
+    interface geocodedInformation {
+        latitude: number,
+        longitude: number
+    }
+
+    interface Address {
+        addressLine: string | null,
+        city: string | null,
+        federalState: string | null
+    }
+
     const cameraIcon = require("../assets/images/camera.png");
 
     const [title, setTitle] = useState<string>();
     const [description, setDescription] = useState<string>();
     const [location, setLocation] = useState<string | null>();
+    const [address, setAddress] = useState<Address | null>();
 
-    const [geocodedInformation, setGeocodedInformation] = useState<any>(null);
+    const [geocodedInformation, setGeocodedInformation] = useState<geocodedInformation | null>(null);
 
-    const [selectedType, setSelectedType] = useState("esgoto");
+    const [selectedType, setSelectedType] = useState<ComplaintTypes>(ComplaintTypes.TRASH);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-    const [selectedImages, setSelectedImages] = useState<(string | undefined)[]>([undefined, undefined, undefined, undefined]);
+    //const [selectedImages, setSelectedImages] = useState<(string | undefined)[]>([undefined, undefined, undefined, undefined]);
+    const [selectedImage, setSelectedImage] = useState<(ImagePicker.ImagePickerAsset | undefined)>(undefined);
 
     const pickImageAsync = async (imageIndex: number) => {    
+      if (selectedImage) {
+        setSelectedImage(undefined);
+        return;
+      }
+
       let result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
         quality: 1,
@@ -41,12 +65,15 @@ const ReportProblemScreen = () => {
       });
   
       if (!result.canceled) {
-        let updatedImages = [...selectedImages];
+        /*let updatedImages = [...selectedImages];
         let index = updatedImages.findIndex(el => el === undefined);
         index = index == -1 ? imageIndex : index;
 
         updatedImages[index] = result.assets[0].uri;
-        setSelectedImages(updatedImages);
+        setSelectedImages(updatedImages);*/
+
+        let updatedImage = result.assets[0];
+        setSelectedImage(updatedImage);
       } else {
       }
     };
@@ -54,27 +81,112 @@ const ReportProblemScreen = () => {
     const handleGetCurrentLocation = async () => {
         let location = await Location.getCurrentPositionAsync({});
 
-        const geocodeInformation = {accuracy: location.coords.accuracy,
+        const geocodedInformation = {accuracy: location.coords.accuracy,
             altitude: location.coords.altitude,
             latitude: location.coords.latitude, 
             longitude: location.coords.longitude};
 
-        let place: Location.LocationGeocodedAddress[] = await Location.reverseGeocodeAsync(geocodeInformation);
+        let place: Location.LocationGeocodedAddress[] = await Location.reverseGeocodeAsync(geocodedInformation);
+
+        const address: Address = {
+            addressLine: place[0].street,
+            city: place[0].subregion,
+            federalState: place[0].region
+        }
+
+        let geoInformation : geocodedInformation = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude
+        };
         
-        setGeocodedInformation(location.coords);
+        setGeocodedInformation(geoInformation);
         setLocation(place[0].formattedAddress);
+        setAddress(address);
         setModalVisible(false);
     }
 
     const searchGeoLocation = async (locationText: string) => {
         let geocodedInformation = await Location.geocodeAsync(locationText);
-        console.log(geocodedInformation)
-        setLocation(locationText);
 
-        const locationObject = {coords: {...geocodedInformation[0], altitudeAccuracy: null, heading: null, speed: null}, timestamp: null}
-        setGeocodedInformation(locationObject);
+        const geolocationInformation: geocodedInformation = {
+            latitude: geocodedInformation[0].latitude,
+            longitude: geocodedInformation[0].longitude
+        };
+
+        let place: Location.LocationGeocodedAddress[] = await Location.reverseGeocodeAsync(geocodedInformation[0]);
+
+        const address: Address = {
+            addressLine: place[0].street,
+            city: place[0].subregion,
+            federalState: place[0].region
+        }
+
+        setGeocodedInformation(geolocationInformation);
+        setLocation(place[0].formattedAddress);
+        setAddress(address);
+        setModalVisible(false);
     }
 
+    const uploadComplaint = async () => {
+        let bearer = await SecureStore.getItemAsync('secure_token');
+
+        const complaintPayload = {
+            title: title,
+            address: address,
+            geolocation: geocodedInformation,
+            type: ComplaintTypes[selectedType],
+            description: description
+        };
+
+        const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
+
+        fetch(hostUri + '/complaints', {
+            method: 'POST',
+            body: JSON.stringify(complaintPayload),
+            headers: {"Content-type": "multipart/form-data", Authorization: 'Bearer ' + bearer}
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Falha ao criar reclamação. Tente novamente mais tarde.");
+            }
+
+            return response.json();
+        }).then(() => router.back())
+        .catch(err => Alert.alert("Erro", err.message));
+    }
+
+    const uploadComplaintWithImage = async() => {
+        let bearer = await SecureStore.getItemAsync('secure_token');
+
+        let formData = new FormData();
+
+        // @ts-expect-error: special react native format for form data
+        formData.append('image', { uri: selectedImage?.uri, name: selectedImage?.fileName, type: selectedImage!.mimeType });
+        formData.append('title', title!);
+        formData.append('address.addressLine', address!.addressLine!);
+        formData.append('address.city', address!.city!);
+        formData.append('address.federalState', address!.federalState!);
+        formData.append('geolocation.latitude', geocodedInformation!.latitude.toString());
+        formData.append('geolocation.longitude', geocodedInformation!.longitude.toString());
+        formData.append('type', ComplaintTypes[selectedType]);
+        formData.append('description', description!);
+
+        const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
+
+        fetch(hostUri + '/complaints-image', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                Authorization: 'Bearer ' + bearer
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Falha ao criar reclamação. Tente novamente mais tarde.");
+            }
+
+            return response.json();
+        }).then(() => router.back())
+        .catch(err => Alert.alert("Erro", err.message));
+    };
 
     const router = useRouter();
 
@@ -86,7 +198,7 @@ const ReportProblemScreen = () => {
                     <TouchableOpacity onPress={() => router.back()}>
                         <Text style={styles.cancelButton}>Cancelar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.createButton}>
+                    <TouchableOpacity  style={styles.createButton} onPress={!!selectedImage ? uploadComplaintWithImage : uploadComplaint}>
                         <Text style={styles.createButtonText}>Criar</Text>
                     </TouchableOpacity>
                 </View>
@@ -107,9 +219,12 @@ const ReportProblemScreen = () => {
                     <Picker style={styles.picker}
                             selectedValue={selectedType}
                             onValueChange={(itemValue, itemIndex) => setSelectedType(itemValue)}>
-                            <Picker.Item label="Esgoto" value="esgoto"></Picker.Item>
-                            <Picker.Item label="Asfalto/Calçada" value="calçada"></Picker.Item>
-                            <Picker.Item label="Outro" value="outro"></Picker.Item>
+                            <Picker.Item label="Lixo" value={ComplaintTypes.TRASH}></Picker.Item>
+                            <Picker.Item label="Iluminação" value={ComplaintTypes.LIGHTING}></Picker.Item> 
+                            <Picker.Item label="Asfalto" value={ComplaintTypes.ASPHALT}></Picker.Item>
+                            <Picker.Item label="Esgoto" value={ComplaintTypes.SEWAGE}></Picker.Item>
+                            <Picker.Item label="Calçada" value={ComplaintTypes.SIDEWALK}></Picker.Item>
+                            <Picker.Item label="Outro" value={ComplaintTypes.OTHER}></Picker.Item>
                     </Picker>
                 </View>
                 <View style={styles.inputGroup}>
@@ -121,9 +236,9 @@ const ReportProblemScreen = () => {
                     <Text style={styles.label}>Fotos</Text>
                     <View style={styles.photoContainer}>
                         <TouchableOpacity onPress={() => pickImageAsync(0)}>
-                            <ImageViewer imgSource={cameraIcon} selectedImage={selectedImages[0]} />
+                            <ImageViewer imgSource={cameraIcon} selectedImage={!!selectedImage ? selectedImage.uri : selectedImage} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => pickImageAsync(1)}>
+                        {/*<TouchableOpacity onPress={() => pickImageAsync(1)}>
                             <ImageViewer imgSource={cameraIcon} selectedImage={selectedImages[1]} />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => pickImageAsync(2)}>
@@ -131,7 +246,7 @@ const ReportProblemScreen = () => {
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => pickImageAsync(3)}>
                             <ImageViewer imgSource={cameraIcon} selectedImage={selectedImages[3]} />
-                        </TouchableOpacity>
+                        </TouchableOpacity>*/}
                     </View>
                 </View>
             </View>

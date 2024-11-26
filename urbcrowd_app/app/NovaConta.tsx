@@ -43,8 +43,7 @@ const SignUpScreen = () => {
         }
       }
       return response.json();
-    })
-    .then(() => router.back())
+    }).then(() => router.back())
     .catch(err => Alert.alert("Erro", err.message));
   };
 

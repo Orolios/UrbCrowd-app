@@ -83,12 +83,10 @@ const MapComponent: React.FC = () => {
             title="Localização Selecionada"
           />
         )}
-        <View>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.plusSign}>+</Text>
-          </TouchableOpacity>
-        </View>
       </MapView>
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.plusSign}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -114,12 +112,15 @@ const styles = StyleSheet.create({
     right: 20, // Distância da direita
   },
   button: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     borderRadius: 50, // Raio de 50 para um círculo perfeito
     backgroundColor: "#FFA07A", // Cor laranja
     justifyContent: "center",
     alignItems: "center",
+    position: "absolute",
+    bottom: 16,
+    right: 16
   },
 
   plusSign: {

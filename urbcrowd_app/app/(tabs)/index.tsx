@@ -293,7 +293,7 @@ export default function HomeScreen() {
       />
 
       <TouchableOpacity style={styles.reportButton} onPress={() => router.push("/Relatar")}>
-        <Image style={styles.buttonIcon} source={require("../../assets/images/plus-icon.png")}></Image>
+        <Text style={styles.buttonIcon}>+</Text>
       </TouchableOpacity>
 
       {/* Detail Modal */}
@@ -511,16 +511,17 @@ const styles = StyleSheet.create({
   reportButton: {
     backgroundColor: Colors.primary,
     borderRadius: 50,
-    height: 64,
-    width: 64,
+    height: 80,
+    width: 80,
     justifyContent: "center",
-    alignSelf: "flex-end",
-    marginRight: 16,
-    marginBottom: 16
+    alignItems: "center",
+    position: "absolute",
+    bottom: 16,
+    right: 16
   },
   buttonIcon: {
-    height: 42,
-    width: 42,
     alignSelf: "center",
+    fontSize: 40,
+    color: Colors.text
   }
 });
