@@ -11,7 +11,10 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.tint,
+        tabBarActiveTintColor: Colors.tabText,
+        tabBarInactiveTintColor: Colors.text,
+        tabBarActiveBackgroundColor: Colors.tab,
+        tabBarInactiveBackgroundColor: Colors.tab,
         headerShown: false,
       }}
     >
@@ -22,7 +25,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
-              color={color}
+              color={focused ? Colors.tabText : Colors.text}
             />
           ),
         }}
@@ -32,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: "mapa",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? "map" : "map-outline"} color={color} />
+            <TabBarIcon name={focused ? "map" : "map-outline"} color={focused ? Colors.tabText : Colors.text} />
           ),
         }}
       />

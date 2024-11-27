@@ -18,6 +18,7 @@ import Constants from "expo-constants";
 
 import ImageViewer from '@/components/ImageViewer'
 import { Colors } from '@/constants/Colors';
+import { Address } from "@/components/complaint-helper"
 
 const ReportProblemScreen = () => {
     const navigation = useNavigation();
@@ -29,12 +30,6 @@ const ReportProblemScreen = () => {
     interface geocodedInformation {
         latitude: number,
         longitude: number
-    }
-
-    interface Address {
-        addressLine: string | null,
-        city: string | null,
-        federalState: string | null
     }
 
     const cameraIcon = require("../assets/images/camera.png");

@@ -13,6 +13,7 @@ export const Colors = {
   error: "#bc4749",
   primary: '#BC6C25',
   tab: "#606C38",
+  tabText: "#DDA15E",
   tint: tintColorLight,
   icon: '#687076',
   tabIconDefault: '#687076',

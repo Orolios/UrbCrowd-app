@@ -23,7 +23,7 @@ const LoginScreen = () => {
 
   useEffect(() => {
     configureGoogleSignIn();
-  });
+  }, []);
 
 
   const [email, setEmail] = useState('');
@@ -90,7 +90,7 @@ const LoginScreen = () => {
 
         <TextInput
           style={styles.input}
-          placeholder="E-mail"
+          placeholder="Usuário ou e-mail"
           value={email}
           onChangeText={setEmail}
           autoCapitalize='none'
@@ -100,6 +100,7 @@ const LoginScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="Senha"
+          autoCapitalize='none'
           value={password}
           onChangeText={setPassword}
           secureTextEntry
