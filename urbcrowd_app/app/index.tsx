@@ -17,7 +17,7 @@ const LoginScreen = () => {
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
-      webClientId: "1087587669949-ekqk7fsq1h01g6s3flhtflj7gmfic2ie.apps.googleusercontent.com",
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_API_KEY,
     });
   };
 
