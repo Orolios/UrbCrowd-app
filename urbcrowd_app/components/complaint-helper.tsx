@@ -2,7 +2,7 @@ export interface Address {
     addressLine: string | null,
     city: string | null,
     federalState: string | null
-  }
+}
 
 export interface Item {
     id: string;
@@ -13,9 +13,13 @@ export interface Item {
     status: string;
     nota: number;
     imagem?: string | null,
-    data: string,
+    data: Date,
     curtido: boolean
-  }
+}
+
+export enum ComplaintTypes {
+  TRASH, LIGHTING, SEWAGE, ASPHALT, SIDEWALK, WEEDING, OTHER
+}
 
 export const getAddressString = (address: Address) => {
     return !!address ? address.addressLine + ' - ' + address.city + ', ' + address.federalState : '';

@@ -17,6 +17,7 @@ import { Colors } from '@/constants/Colors';
 import * as SecureStore from 'expo-secure-store';
 import AntDesign from "@expo/vector-icons/AntDesign";
 import ListItem from "@/components/Listagem";
+import FiltersModal from "@/components/FiltersModal";
 import { Item, getAddressString, translateComplaintType} from "@/components/complaint-helper"
 
 const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: boolean, onClose: () => void }) => {
@@ -120,44 +121,19 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
   );
 };
 
-// Exemplo de dados para preencher a lista
-
-const renderItem = ({ item }: { item: Item }) => (
-  // <View style={styles.itemContainer}>
-  //   <Text style={styles.title}>{item.nome}</Text>
-  //   <Text style={styles.subtitle}>Endereço: {item.endereco}</Text>
-  //   <Text>Tipo: {item.tipo}</Text>
-  //   <Text>Status: {item.status}</Text>
-  //   <Text>Nota: {item.nota}</Text>
-  // </View>
-  <View style={styles.problemItem}>
-    <View style={styles.problemDetails}>
-      <Text style={styles.problemTitle}>Buraco na rua</Text>
-      <Text style={styles.problemSubtitle}>Rua Shigeo Mori, XXXX</Text>
-      <Text style={styles.problemSubtitle}>Tipo: Asfalto </Text>
-    </View>
-    <View style={styles.likesContainer}>
-      <Text style={styles.likesText}>20</Text>
-    </View>
-  </View>
-);
-
 export default function HomeScreen() {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedTipo, setSelectedTipo] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [enderecoFiltro, setEnderecoFiltro] = useState<string>("");
   const [initalData, setInitialData] = useState<Item[]>();
   const [filteredData, setFilteredData] = useState<Item[]>();
 
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [isDetailsModalVisible, setisDetailsModalVisible] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState<boolean>(false);
 
   const router = useRouter();
   // Function to handle item click
   const handleItemClick = (item: Item) => {
     setSelectedItem(item);
-    setIsDetailModalVisible(true);
+    setisDetailsModalVisible(true);
   };
 
   useEffect(() => {
@@ -197,37 +173,22 @@ export default function HomeScreen() {
   // Function to close the modal
   const closeDetailModal = () => {
     setSelectedItem(null);
-    setIsDetailModalVisible(false);
+    setisDetailsModalVisible(false);
   };
 
   // Função para aplicar os filtros
-  const applyFilters = () => {
-    let filtered = initalData!;
-
-    if (selectedTipo) {
-      filtered = filtered.filter((item) => item.tipo === selectedTipo);
-    }
-    if (selectedStatus) {
-      filtered = filtered.filter((item) => item.status === selectedStatus);
-    }
-    if (enderecoFiltro) {
-      filtered = filtered.filter((item) =>
-        getAddressString(item.endereco).toLowerCase().includes(enderecoFiltro.toLowerCase())
-      );
-    }
-
+  const applyFilters = (filtered: Item[]) => {
     setFilteredData(filtered);
-    setIsModalVisible(false); // Fechar o modal após aplicar os filtros
+    setIsFilterModalVisible(false); // Fechar o modal após aplicar os filtros
   };
 
   // Função para limpar os filtros
   const clearFilters = () => {
-    setSelectedTipo(null);
-    setSelectedStatus(null);
-    setEnderecoFiltro("");
     setFilteredData(initalData);
-    setIsModalVisible(false); // Fechar o modal
+    setIsFilterModalVisible(false);
   };
+
+  const closeFilterModal = () => setIsFilterModalVisible(false);
 
   const thumbsUp = async(id: string, item: Item) => {
     let bearer = await SecureStore.getItemAsync('secure_token');
@@ -255,53 +216,13 @@ export default function HomeScreen() {
       {/* Botão para abrir o modal */}
       <TouchableOpacity
         style={styles.filterButton}
-        onPress={() => setIsModalVisible(true)}
+        onPress={() => setIsFilterModalVisible(true)}
       >
-        <Text style={styles.buttonText}>Abrir Filtro</Text>
+        <Text style={styles.buttonText}>Abrir Filtros</Text>
       </TouchableOpacity>
 
-      {/* Modal para o filtro */}
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filtros</Text>
-
-            {/* Filtro por Tipo */}
-            <Text style={styles.label}>Tipo</Text>
-            {/* <Picker
-              selectedValue={selectedTipo}
-              onValueChange={(value) => setSelectedTipo(value)}
-            >
-              <Picker.Item label="Todos" value={null} />
-              <Picker.Item label="Cliente" value="Cliente" />
-              <Picker.Item label="Fornecedor" value="Fornecedor" />
-            </Picker> */}
-
-            {/* Filtro por Status */}
-            <Text style={styles.label}>Status</Text>
-
-            {/* Filtro por Endereço */}
-            <Text style={styles.label}>Endereço</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Digite o endereço"
-              value={enderecoFiltro}
-              onChangeText={(text) => setEnderecoFiltro(text)}
-            />
-
-            {/* Botões de Aplicar e Limpar */}
-            <View style={styles.modalButtons}>
-              <Button title="Aplicar Filtros" onPress={applyFilters} />
-              <Button
-                title="Limpar Filtros"
-                color="red"
-                onPress={clearFilters}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
+      <FiltersModal initialData={initalData!} visible={isFilterModalVisible} closeModal={closeFilterModal} apply={applyFilters} clear={clearFilters}></FiltersModal>
+      <Text style={styles.header}>Problemas relatados</Text>
       {/* Lista Filtrada */}
       <FlatList
         data={filteredData ? filteredData : initalData}
@@ -311,19 +232,17 @@ export default function HomeScreen() {
             <ListItem item={item} thumbsUp={thumbsUp} />
           </TouchableOpacity>
         )} // Usando o ListItem aqui
-        ListHeaderComponent={
-          <Text style={styles.header}>Problemas relatados</Text>
-        }
+
       />
 
-      <TouchableOpacity style={styles.reportButton} onPress={() => router.push("/Relatar")}>
-        <FontAwesome name="plus" size={44} color={Colors.text} />
+      <TouchableOpacity style={styles.reportButton}>
+        <Text style={styles.buttonIcon}>+</Text>
       </TouchableOpacity>
 
       {/* Detail Modal */}
       <DetailModal
         item={selectedItem}
-        visible={isDetailModalVisible}
+        visible={isDetailsModalVisible}
         onClose={closeDetailModal}
       />
 
@@ -342,8 +261,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "left",
     color: "#FFF",
-    marginVertical: 20,
-    paddingLeft: 12
+    marginTop: 12,
+    marginBottom: 14,
+    paddingLeft: 16
   },
   itemContainer: {
     backgroundColor: "#fff",
@@ -365,11 +285,10 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   filterButton: {
-    backgroundColor: "#6200ee",
+    backgroundColor: Colors.primary,
     padding: 15,
-    borderRadius: 8,
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   buttonText: {
     color: "#fff",
@@ -536,10 +455,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   reportButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 50,
-    height: 80,
     width: 80,
+    height: 80,
+    borderRadius: 50,
+    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
@@ -548,7 +467,7 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     textAlign: "center",
-    fontSize: 64,
+    fontSize: 40,
     color: Colors.text,
   }
 });

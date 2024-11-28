@@ -219,6 +219,7 @@ const ReportProblemScreen = () => {
                             <Picker.Item label="Asfalto" value={ComplaintTypes.ASPHALT}></Picker.Item>
                             <Picker.Item label="Esgoto" value={ComplaintTypes.SEWAGE}></Picker.Item>
                             <Picker.Item label="Calçada" value={ComplaintTypes.SIDEWALK}></Picker.Item>
+                            <Picker.Item label="Capinagem" value={ComplaintTypes.WEEDING}></Picker.Item>
                             <Picker.Item label="Outro" value={ComplaintTypes.OTHER}></Picker.Item>
                     </Picker>
                 </View>

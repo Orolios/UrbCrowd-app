@@ -65,7 +65,7 @@ const ListItem: React.FC<ListItemProps> = ({ item, thumbsUp }) => {
           </View>
 
           <TouchableOpacity style={styles.likesContainer} onPress={() => thumbsUp(item.id, item)}>
-            <AntDesign name={item.curtido ? "like1" : "like2"} size={30} color="black" />
+            <AntDesign name={item.curtido ? "like1" : "like2"} size={30} color={Colors.blackText} />
             <Text numberOfLines={1} style={styles.problemSubtitle}>
               {item.nota}
             </Text>

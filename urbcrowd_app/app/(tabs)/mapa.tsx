@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
+import { Colors } from "@/constants/Colors";
 
 // Definindo os tipos das coordenadas
 interface Coordinates {
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 50, // Raio de 50 para um círculo perfeito
-    backgroundColor: "#FFA07A", // Cor laranja
+    backgroundColor: Colors.primary, // Cor laranja
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
 
   plusSign: {
     fontSize: 40,
-    color: "#FFFFFF", // Cor branca para o sinal de mais
+    color: Colors.text, // Cor branca para o sinal de mais
   },
 });
 
