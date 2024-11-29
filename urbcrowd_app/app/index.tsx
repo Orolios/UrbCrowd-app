@@ -51,7 +51,10 @@ const LoginScreen = () => {
       }
       return response.json();
     })
-    .then(data => SecureStore.setItemAsync('secure_token', data.accessToken))
+    .then(data => {
+      SecureStore.setItemAsync('secure_token', data.accessToken);
+      SecureStore.setItemAsync('role', data.roles[0]);
+    })
     .then(() => {
       setBearer(true);
       router.replace('/(tabs)');
@@ -64,7 +67,8 @@ const LoginScreen = () => {
       await GoogleSignin.hasPlayServices();
       const response: SignInResponse = await GoogleSignin.signIn();
       await SecureStore.setItemAsync('secure_token', response.data?.idToken!);
-
+      await SecureStore.setItemAsync('role', "DEFAULT");
+      
       setBearer(true);
       router.replace('/(tabs)');
     } catch (error) {

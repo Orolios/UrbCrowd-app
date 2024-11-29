@@ -23,6 +23,18 @@ import { ComplaintContext } from "@/contexts/complaints";
 
 const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: boolean, onClose: () => void }) => {
 
+  const [role, setRole] = useState<string>("DEFAULT");
+
+  useEffect(() => {
+    const getRole = async() => {
+      const userRole = await SecureStore.getItemAsync("role");
+
+      setRole(userRole!);
+    }
+
+    getRole();
+  })
+
   const renderTypeIcon = (tipo: string) => {
     switch (tipo) {
       case ("TRASH"):
@@ -59,65 +71,130 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
 
   const router = useRouter();
 
+  const confirmDelete = () => {
+    Alert.alert('', "Tem certeza que deseja remover o problema?",
+      [
+        {text: "Cancelar", onPress: () => {}},
+        {text: "Confirmar", onPress: deleteComplaint}
+      ],
+      { cancelable: true}
+    )
+  }
+
+  const deleteComplaint = async() => {
+    let bearer = await SecureStore.getItemAsync('secure_token');
+    
+    const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
+    
+    fetch(hostUri + '/complaints' + item!.id, {
+      method: 'DELETE',
+      headers: {Authorization: 'Bearer ' + bearer}
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error()
+      }
+      return response.json();
+    })
+    .catch(error => Alert.alert("Erro", "Não foi possível remover o problema no momento. Tente novamente mais tarde."))
+  };
+
+  const confirmSolve = () => {
+    Alert.alert('', "Tem certeza que deseja marcar o problema como resolvido?",
+      [
+        {text: "Cancelar", onPress: () => {}},
+        {text: "Confirmar", onPress: solveComplaint}
+      ],
+      { cancelable: true}
+    )
+  }
+
+  const solveComplaint = async() => {
+    let bearer = await SecureStore.getItemAsync('secure_token');
+    
+    const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
+
+    fetch(hostUri + '/complaints' + item!.id + "/status", {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: "SOLVED"
+      }),
+      headers: {"Content-type": "application/json; charset=UTF-8", Authorization: 'Bearer ' + bearer}
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error()
+      }
+      return response.json();
+    })
+    .catch(error => Alert.alert("Erro", "Não foi possível mudar o status do problema no momento. Tente novamente mais tarde."))
+  }
+
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.detailmodalContainer}>
         <View style={styles.detailmodalContent}>
-          {/* Header Section */}
-          <View style={styles.headerSection}>
-            <TouchableOpacity onPress={onClose}>
-              <AntDesign name="arrowleft" size={36} color={Colors.blackText} />
+          <View style={{flex: 1}}>
+            <View style={styles.headerSection}>
+              <TouchableOpacity onPress={onClose}>
+                <AntDesign name="arrowleft" size={36} color={Colors.blackText} />
+              </TouchableOpacity>
+              <View style={{flexDirection: "column", alignItems: "center"}}>
+                <Text style={styles.detailtitle}>{item?.nome}</Text>
+                <Text style={styles.status}>Relatado em: {new Date(item?.data!).toLocaleDateString()}</Text>
+              </View>
+              <View style={styles.likesContainer}>
+                <AntDesign name="like2" size={30} color="black" />
+                <Text numberOfLines={1} style={styles.problemSubtitle}>
+                  {item?.nota}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>Detalhes</Text>
+
+            <View style={styles.section}>
+              {renderStatus(item?.status!)}
+              <View style={{flexDirection: "row", alignItems: "center"}}>
+                <Text style={styles.detailLabel}>Tipo: {translateComplaintType(item?.tipo!)}</Text>
+                {renderTypeIcon(item?.tipo!)}
+              </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>Descrição</Text>
+
+            <View style={styles.section}>
+              <Text style={styles.detailLabel}>{item?.descricao}</Text>
+            </View>
+
+            <Text style={styles.sectionTitle}>Localização</Text>
+            <View style={styles.section}>
+              <Text style={styles.detailLabel}>Logradouro: {item?.endereco.addressLine}</Text>
+              <Text style={styles.detailLabel}>Cidade: {item?.endereco.city + " - " + item?.endereco.federalState}</Text>
+            </View>
+
+            {item?.imagem ? (<View>
+              <Text style={styles.sectionTitle}>Fotos</Text>
+              <View style={styles.photoSection}>
+                <View style={styles.photoContainer}>
+                    <Image
+                      source={{ uri: item?.imagem! }}
+                      style={styles.photo}
+                    />
+                </View>
+              </View> 
+            </View>) : (<Text style={styles.sectionTitle}>Não há fotos anexadas a esse problema.</Text>)}
+          </View>
+
+          {role === "ADMIN" ? 
+          (<View style={styles.buttonsContainer}>
+            <TouchableOpacity style={styles.deleteButton} onPress={confirmDelete}>
+                <Text style={styles.filterText}>Remover problema</Text>
             </TouchableOpacity>
-            <View style={{flexDirection: "column", alignItems: "center"}}>
-              <Text style={styles.detailtitle}>{item?.nome}</Text>
-              <Text style={styles.status}>Relatado em: {new Date(item?.data!).toLocaleDateString()}</Text>
-            </View>
-            <View style={styles.likesContainer}>
-              <AntDesign name="like2" size={30} color="black" />
-              <Text numberOfLines={1} style={styles.problemSubtitle}>
-                {item?.nota}
-              </Text>
-            </View>
-          </View>
 
-          <Text style={styles.sectionTitle}>Detalhes</Text>
+            <TouchableOpacity style={styles.statusButton} onPress={confirmSolve}>
+                <Text style={styles.filterText}>Resolver problema</Text>
+            </TouchableOpacity>
+          </View>) : ""}
 
-          {/* Details Section */}
-          <View style={styles.section}>
-            {renderStatus(item?.status!)}
-            {/* <Text style={styles.sectionText}>{item?.descricao}</Text> */}
-            <View style={{flexDirection: "row", alignItems: "center"}}>
-              <Text style={styles.detailLabel}>Tipo: {translateComplaintType(item?.tipo!)}</Text>
-              {renderTypeIcon(item?.tipo!)}
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>Descrição</Text>
-
-          <View style={styles.section}>
-            {/* <Text style={styles.sectionText}>{item?.descricao}</Text> */}
-            <Text style={styles.detailLabel}>{item?.descricao}</Text>
-          </View>
-
-          {/* Location Section */}
-          <Text style={styles.sectionTitle}>Localização</Text>
-          <View style={styles.section}>
-            <Text style={styles.detailLabel}>Logradouro: {item?.endereco.addressLine}</Text>
-            <Text style={styles.detailLabel}>Cidade: {item?.endereco.city + " - " + item?.endereco.federalState}</Text>
-          </View>
-
-        {/* Photos Section */}
-        {item?.imagem ? (<View>
-          <Text style={styles.sectionTitle}>Fotos</Text>
-          <View style={styles.photoSection}>
-            <View style={styles.photoContainer}>
-                <Image
-                  source={{ uri: item?.imagem! }}
-                  style={styles.photo}
-                />
-            </View>
-          </View> 
-        </View>) : (<Text style={styles.sectionTitle}>Não há fotos anexadas a esse problema.</Text>)}
         </View>
       </View>
     </Modal>
@@ -348,7 +425,6 @@ const styles = StyleSheet.create({
   },
   detailmodalContent: {
     backgroundColor: Colors.background,
-    paddingBottom: 20,
     borderRadius: 4,
     marginHorizontal: 10, // Reduce horizontal margins to make it wider
     width: "90%", // Set the width to 90% of the screen
@@ -401,6 +477,28 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
     marginLeft: 8
+  },
+  buttonsContainer: {
+    marginTop: 20,
+    flexDirection: "row",
+  },
+  deleteButton: {
+      width: "50%",
+      height: 60,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.error
+  },
+  statusButton: {
+      width: "50%",
+      height: 60,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.primary
+  },
+  filterText: {
+      fontSize: 16,
+      color: Colors.text,
   },
   sectionText: {
     fontSize: 14,
