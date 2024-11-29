@@ -4,11 +4,17 @@ export interface Address {
     federalState: string | null
 }
 
+export interface Geolocation {
+  latitude: number,
+  longitude: number
+}
+
 export interface Item {
     id: string;
     nome: string;
     descricao?: string,
     endereco: Address;
+    geolocation: Geolocation,
     tipo: string;
     status: string;
     nota: number;

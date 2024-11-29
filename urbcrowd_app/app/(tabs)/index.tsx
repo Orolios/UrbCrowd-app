@@ -10,8 +10,8 @@ import {
   Image,
   Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState, useContext } from "react";
+import { useRouter, Link } from 'expo-router';
 import { FontAwesome } from "@expo/vector-icons";
 import { Colors } from '@/constants/Colors';
 import * as SecureStore from 'expo-secure-store';
@@ -19,6 +19,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import ListItem from "@/components/Listagem";
 import FiltersModal from "@/components/FiltersModal";
 import { Item, getAddressString, translateComplaintType} from "@/components/complaint-helper"
+import { ComplaintContext } from "@/contexts/complaints";
 
 const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: boolean, onClose: () => void }) => {
 
@@ -55,6 +56,8 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
         </View>)
     }
   }
+
+  const router = useRouter();
 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
@@ -136,39 +139,11 @@ export default function HomeScreen() {
     setisDetailsModalVisible(true);
   };
 
+  const { initialComplaints } = useContext(ComplaintContext);
+
   useEffect(() => {
-    const getBearer = async() => {
-      let bearer = await SecureStore.getItemAsync('secure_token')
-
-      const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
-      
-      fetch(hostUri + '/complaints', {
-        method: 'GET',
-        headers: {Authorization: 'Bearer ' + bearer}
-    }).then(response => response.json())
-    .then((data) => {
-      const complaintList: Item[] = data.map((complaint: any) => {
-        return {  id: complaint.id,
-          nome: complaint.title,
-          descricao: complaint.description,
-          endereco: complaint.address,
-          tipo: complaint.type,
-          status: complaint.status,
-          nota: complaint.thumbsUpCount,
-          imagem: complaint.imageHref,
-          data: complaint.createdDate,
-          curtido:  complaint.userHasThumbsUp }
-      })
-  
-      return complaintList;
-    })
-    .then(list => setInitialData(list))
-    .catch(error => {Alert.alert("Erro", "Não foi possível obter os problemas relatados no momento.")})
-      };
-
-    getBearer();
-  }, [])
-
+    setInitialData(initialComplaints)
+  })
 
   // Function to close the modal
   const closeDetailModal = () => {
@@ -235,7 +210,7 @@ export default function HomeScreen() {
 
       />
 
-      <TouchableOpacity style={styles.reportButton}>
+      <TouchableOpacity style={styles.reportButton} onPress={() => router.push("/Relatar")}>
         <Text style={styles.buttonIcon}>+</Text>
       </TouchableOpacity>
 
@@ -435,12 +410,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.blackText,
   },
-  // Link to view map
-  mapLink: {
-    fontSize: 14,
-    color: "#FFF",
-    fontWeight: "bold",
-    marginTop: 5,
+  viewMap: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: "30%"
   },
   // Photo container: display images in a row
   photoContainer: {

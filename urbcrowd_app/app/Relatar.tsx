@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -18,14 +18,12 @@ import Constants from "expo-constants";
 
 import ImageViewer from '@/components/ImageViewer'
 import { Colors } from '@/constants/Colors';
-import { Address } from "@/components/complaint-helper"
+import { Address, ComplaintTypes } from "@/components/complaint-helper"
+import { ComplaintContext } from "@/contexts/complaints";
 
 const ReportProblemScreen = () => {
     const navigation = useNavigation();
-
-    enum ComplaintTypes {
-        TRASH, LIGHTING, SEWAGE, ASPHALT, SIDEWALK, WEEDING, OTHER
-    }
+    let { render, setData } = useContext(ComplaintContext);
 
     interface geocodedInformation {
         latitude: number,
@@ -103,6 +101,11 @@ const ReportProblemScreen = () => {
     const searchGeoLocation = async (locationText: string) => {
         let geocodedInformation = await Location.geocodeAsync(locationText);
 
+        if (!geocodedInformation[0]) {
+            Alert.alert("Erro", "Não foi possível encontrar o endereço digitado.")
+            return;
+        }
+
         const geolocationInformation: geocodedInformation = {
             latitude: geocodedInformation[0].latitude,
             longitude: geocodedInformation[0].longitude
@@ -122,7 +125,11 @@ const ReportProblemScreen = () => {
         setModalVisible(false);
     }
 
-    const uploadComplaint = async () => {
+    const updateRender = () => {
+        setData(++render);
+    }
+
+    const uploadComplaint = async (updateRender: any) => {
         let bearer = await SecureStore.getItemAsync('secure_token');
 
         const complaintPayload = {
@@ -138,18 +145,21 @@ const ReportProblemScreen = () => {
         fetch(hostUri + '/complaints', {
             method: 'POST',
             body: JSON.stringify(complaintPayload),
-            headers: {"Content-type": "multipart/form-data", Authorization: 'Bearer ' + bearer}
+            headers: { "Content-type": "application/json; charset=UTF-8", Authorization: 'Bearer ' + bearer}
         }).then(response => {
             if (!response.ok) {
                 throw new Error("Falha ao criar reclamação. Tente novamente mais tarde.");
             }
 
             return response.json();
-        }).then(() => router.back())
+        }).then(() => {
+            updateRender();
+            router.back();
+        })
         .catch(err => Alert.alert("Erro", err.message));
     }
 
-    const uploadComplaintWithImage = async() => {
+    const uploadComplaintWithImage = async(updateRender: any) => {
         let bearer = await SecureStore.getItemAsync('secure_token');
 
         let formData = new FormData();
@@ -179,11 +189,15 @@ const ReportProblemScreen = () => {
             }
 
             return response.json();
-        }).then(() => router.back())
+        }).then(() => {
+            updateRender();
+            router.back();
+        })
         .catch(err => Alert.alert("Erro", err.message));
     };
 
     const router = useRouter();
+
 
     return (
         <View>
@@ -193,7 +207,7 @@ const ReportProblemScreen = () => {
                     <TouchableOpacity onPress={() => router.back()}>
                         <Text style={styles.cancelButton}>Cancelar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity  style={styles.createButton} onPress={!!selectedImage ? uploadComplaintWithImage : uploadComplaint}>
+                    <TouchableOpacity  style={styles.createButton} onPress={() => !!selectedImage ? uploadComplaintWithImage(updateRender) : uploadComplaint(updateRender)}>
                         <Text style={styles.createButtonText}>Criar</Text>
                     </TouchableOpacity>
                 </View>
@@ -368,7 +382,8 @@ const styles = StyleSheet.create({
         padding: 14
     },
     modalInput: {
-        backgroundColor: "transparent"
+        backgroundColor: "transparent",
+        width: "100%"
     },
     backArrow: {
         height: 24,

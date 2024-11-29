@@ -67,6 +67,7 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
+import ComplaintProvider from "@/contexts/complaints";
 
 // Prevenir a splash screen de ocultar automaticamente antes de carregar os assets
 SplashScreen.preventAutoHideAsync();
@@ -92,34 +93,36 @@ export default function RootLayout() {
   return (
     // Tema baseado no esquema de cores (dark ou light)
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ComplaintProvider>
       {/* Definição do Stack Navigator */}
-      <Stack>
-        {/* Tela inicial (index), sem header */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack>
+          {/* Tela inicial (index), sem header */}
+          <Stack.Screen name="index" options={{ headerShown: false }} />
 
-        {/* Tela de criação de nova conta */}
-        <Stack.Screen
-          name="NovaConta"
-          options={{
-            headerTitle: "Voltar para o login",
-            headerStyle: {
-              backgroundColor: Colors.background,
-            },
-            headerTitleStyle: {
-              color: Colors.text,
-            },
-            headerShadowVisible: false,
-          }}
-        />
+          {/* Tela de criação de nova conta */}
+          <Stack.Screen
+            name="NovaConta"
+            options={{
+              headerTitle: "Voltar para o login",
+              headerStyle: {
+                backgroundColor: Colors.background,
+              },
+              headerTitleStyle: {
+                color: Colors.text,
+              },
+              headerShadowVisible: false,
+            }}
+          />
 
-        {/* Tela de abas (tabs), sem header */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* Tela de abas (tabs), sem header */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-        <Stack.Screen name="Relatar" options={{ headerShown: false }} />
+          <Stack.Screen name="Relatar" options={{ headerShown: false }} />
 
-        {/* Tela de página não encontrada */}
-        <Stack.Screen name="+not-found" />
-      </Stack>
+          {/* Tela de página não encontrada */}
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ComplaintProvider>
     </ThemeProvider>
   );
 }

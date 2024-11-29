@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Image, ScrollView } from 'react-native';
@@ -11,9 +11,10 @@ import {
   statusCodes,
   isErrorWithCode
   } from '@react-native-google-signin/google-signin';
+import { ComplaintContext } from '@/contexts/complaints';
 
 const LoginScreen = () => {
-
+  const { setBearer } = useContext(ComplaintContext);
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
@@ -38,8 +39,6 @@ const LoginScreen = () => {
       password: password
     };
 
-    // TODO: ADD URL API
-    //const loginUri = Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':8080') ?? 'apiurl.com';
     const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
 
     fetch(hostUri + '/login', {
@@ -53,7 +52,10 @@ const LoginScreen = () => {
       return response.json();
     })
     .then(data => SecureStore.setItemAsync('secure_token', data.accessToken))
-    .then(() => router.replace('/(tabs)'))
+    .then(() => {
+      setBearer(true);
+      router.replace('/(tabs)');
+    })
     .catch(err => Alert.alert("Erro", err.message));
   };
 
@@ -61,8 +63,10 @@ const LoginScreen = () => {
     try {
       await GoogleSignin.hasPlayServices();
       const response: SignInResponse = await GoogleSignin.signIn();
-      SecureStore.setItemAsync('secure_token', response.data?.idToken!)
-      router.replace('/(tabs)')
+      await SecureStore.setItemAsync('secure_token', response.data?.idToken!);
+
+      setBearer(true);
+      router.replace('/(tabs)');
     } catch (error) {
       if (isErrorWithCode(error)) {
         switch (error.code) {
@@ -83,10 +87,8 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <ScrollView style={styles.scroll} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.image}>
-          <Image source={require('../assets/images/lamp-post.png')}></Image>
+          <Image style={styles.logo} source={require('../assets/images/urbcrowd-logo-transparent.png')}></Image>
         </View>
-        
-        <Text style={styles.title}>UrbCrowd</Text>
 
         <TextInput
           style={styles.input}
@@ -145,10 +147,13 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   image: {
-    width: 56,
-    height: 56,
     alignSelf: 'center',
     marginBottom: 27
+  },
+  logo: {
+    width: 180,
+    height: 180,
+    alignSelf: "center"
   },
   title: {
     fontSize: 24,

@@ -30,9 +30,9 @@ const SignUpScreen = () => {
     };
 
     // TODO: ADD URL API
-    const loginUri = Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':8080') ?? 'apiurl.com';
+    const loginUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
 
-    fetch('http:/' + loginUri + '/users', {
+    fetch(loginUri + '/users', {
       method: 'POST',
       body: JSON.stringify(userData),
       headers: {"Content-type": "application/json; charset=UTF-8"}

@@ -4,7 +4,7 @@
     "slug": "urbcrowd_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.jpeg",
+    "icon": "./assets/images/urbcrowd-logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -18,7 +18,7 @@
     "android": {
       "package": "com.mc855.urbcrowd",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/urbcrowd-logo.png",
         "backgroundColor": "#ffffff"
       },
       "config": {
