@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "urbcrowd_app",
+    "name": "Urbcrowd",
     "slug": "urbcrowd_app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,6 +17,7 @@
     },
     "android": {
       "package": "com.mc855.urbcrowd",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/urbcrowd-logo.png",
         "backgroundColor": "#ffffff"

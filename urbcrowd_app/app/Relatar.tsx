@@ -72,6 +72,12 @@ const ReportProblemScreen = () => {
     };
 
     const handleGetCurrentLocation = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Erro", "Permissão para acessar localização foi negada");
+          return;
+        }
+
         let location = await Location.getCurrentPositionAsync({});
 
         const geocodedInformation = {accuracy: location.coords.accuracy,

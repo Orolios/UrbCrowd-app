@@ -24,6 +24,7 @@ import { ComplaintContext } from "@/contexts/complaints";
 const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: boolean, onClose: () => void }) => {
 
   const [role, setRole] = useState<string>("DEFAULT");
+  let { render, setData } = useContext(ComplaintContext);
 
   useEffect(() => {
     const getRole = async() => {
@@ -34,6 +35,10 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
 
     getRole();
   })
+
+  const updateRender = () => {
+    setData(++render);
+  }
 
   const renderTypeIcon = (tipo: string) => {
     switch (tipo) {
@@ -71,49 +76,51 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
 
   const router = useRouter();
 
-  const confirmDelete = () => {
+  const confirmDelete = (updateRender: any, onClose: any) => {
     Alert.alert('', "Tem certeza que deseja remover o problema?",
       [
         {text: "Cancelar", onPress: () => {}},
-        {text: "Confirmar", onPress: deleteComplaint}
+        {text: "Confirmar", onPress: () => deleteComplaint(updateRender, onClose)}
       ],
       { cancelable: true}
     )
   }
 
-  const deleteComplaint = async() => {
+  const deleteComplaint = async(updateRender: any, onClose: any) => {
     let bearer = await SecureStore.getItemAsync('secure_token');
     
     const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
-    
-    fetch(hostUri + '/complaints' + item!.id, {
+
+    fetch(hostUri + '/complaints/' + item!.id, {
       method: 'DELETE',
       headers: {Authorization: 'Bearer ' + bearer}
     }).then(response => {
       if (!response.ok) {
-        throw new Error()
+        throw new Error();
       }
-      return response.json();
+    }).then(() => {
+      updateRender();
+      onClose();
     })
     .catch(error => Alert.alert("Erro", "Não foi possível remover o problema no momento. Tente novamente mais tarde."))
   };
 
-  const confirmSolve = () => {
+  const confirmSolve = (updateRender: any, onClose: any) => {
     Alert.alert('', "Tem certeza que deseja marcar o problema como resolvido?",
       [
         {text: "Cancelar", onPress: () => {}},
-        {text: "Confirmar", onPress: solveComplaint}
+        {text: "Confirmar", onPress: () => solveComplaint(updateRender, onClose)}
       ],
       { cancelable: true}
     )
   }
 
-  const solveComplaint = async() => {
+  const solveComplaint = async(updateRender: any, onClose: any) => {
     let bearer = await SecureStore.getItemAsync('secure_token');
     
     const hostUri = 'http://urbcrowd-dev.sa-east-1.elasticbeanstalk.com';
 
-    fetch(hostUri + '/complaints' + item!.id + "/status", {
+    fetch(hostUri + '/complaints/' + item!.id + "/status", {
       method: 'PATCH',
       body: JSON.stringify({
         status: "SOLVED"
@@ -123,7 +130,9 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
       if (!response.ok) {
         throw new Error()
       }
-      return response.json();
+    }).then(() => {
+      updateRender();
+      onClose();
     })
     .catch(error => Alert.alert("Erro", "Não foi possível mudar o status do problema no momento. Tente novamente mais tarde."))
   }
@@ -186,11 +195,11 @@ const DetailModal = ({ item, visible, onClose }: { item: Item | null, visible: b
 
           {role === "ADMIN" ? 
           (<View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.deleteButton} onPress={confirmDelete}>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(updateRender, onClose)}>
                 <Text style={styles.filterText}>Remover problema</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.statusButton} onPress={confirmSolve}>
+            <TouchableOpacity style={styles.statusButton} onPress={() => confirmSolve(updateRender, onClose)}>
                 <Text style={styles.filterText}>Resolver problema</Text>
             </TouchableOpacity>
           </View>) : ""}
